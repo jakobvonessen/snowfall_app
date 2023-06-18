@@ -9,10 +9,23 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
-  
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final TextEditingController city1Controller = TextEditingController();
   final TextEditingController city2Controller = TextEditingController();
+
+  // Map to store coordinates for both cities
+  Map<String, Map<String, dynamic>> cityCoordinates = {};
+
+  void onCitySelected(String city, Map<String, dynamic> coordinates) {
+    setState(() {
+      cityCoordinates[city] = coordinates;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +42,21 @@ class MyApp extends StatelessWidget {
               style: TextStyle(fontSize: 24),
             ),
             SizedBox(height: 16),
-            CityInputField(label: 'City 1', controller: city1Controller),
+            CityInputField(label: 'City 1', controller: city1Controller, onCitySelected: onCitySelected),
             SizedBox(height: 16),
-            CityInputField(label: 'City 2', controller: city2Controller),
+            CityInputField(label: 'City 2', controller: city2Controller, onCitySelected: onCitySelected),
             SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                  Fluttertoast.showToast(
-                    msg: 'Hejsan',
-                    toastLength: Toast.LENGTH_LONG,
-                    gravity: ToastGravity.BOTTOM,
-                  );
-                },
+                final city1 = city1Controller.text;
+                final city2 = city2Controller.text;
+                Fluttertoast.showToast(
+                  msg: 'Coordinates for ${city1}: ${cityCoordinates[city1]?.toString()}\n'
+                       'Coordinates for ${city2}: ${cityCoordinates[city2]?.toString()}',
+                  toastLength: Toast.LENGTH_LONG,
+                  gravity: ToastGravity.BOTTOM,
+                );
+              },
               child: Text('See where it snows the most'),
             ),
           ],
@@ -52,9 +68,10 @@ class MyApp extends StatelessWidget {
 
 class CityInputField extends StatefulWidget {
   final String label;
-  final TextEditingController controller; // Add the controller parameter
+  final TextEditingController controller;
+  final Function(String city, Map<String, dynamic> coordinates) onCitySelected;
 
-  const CityInputField({Key? key, required this.label, required this.controller}) : super(key: key);
+  const CityInputField({Key? key, required this.label, required this.controller, required this.onCitySelected}) : super(key: key);
 
   @override
   _CityInputFieldState createState() => _CityInputFieldState();
@@ -63,7 +80,6 @@ class CityInputField extends StatefulWidget {
 
 class _CityInputFieldState extends State<CityInputField> {
   
-
   List<String> suggestions = [];
   List<String> placeIds = [];
   Map<String, dynamic> coordinates = {}; // Map to store city coordinates
@@ -81,7 +97,6 @@ class _CityInputFieldState extends State<CityInputField> {
       setState(() {
         suggestions = predictions.map<String>((prediction) => prediction['description'] as String).toList();
         placeIds = predictions.map<String>((prediction) => prediction['place_id'] as String).toList();
-        coordinates = {}; // Clear the coordinates map when suggestions change
       });
     }
   }
@@ -106,6 +121,7 @@ class _CityInputFieldState extends State<CityInputField> {
           final city = widget.controller.text;
           setState(() {
             coordinates[city] = {'lat': lat, 'lng': lng};
+            widget.onCitySelected(city, {'lat': lat, 'lng': lng}); // Call the callback
           });
         }
       }
