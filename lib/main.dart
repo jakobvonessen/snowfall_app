@@ -1,5 +1,6 @@
 import 'secrets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
@@ -21,16 +22,53 @@ class _MyAppState extends State<MyApp> {
   // Map to store coordinates for both cities
   Map<String, Map<String, dynamic>> cityCoordinates = {};
 
-  String cityWinnerCalculator() {
+  Future<void> cityWinnerCalculator() async {
     final String endpoint = 'https://archive-api.open-meteo.com/v1/archive';
+    Map<String, double> snowFalls = {};
     for (var cityName in cityCoordinates.keys) {
       var cityData = cityCoordinates[cityName];
       var lat = cityData?["lat"].toStringAsFixed(2);
       var lng = cityData?["lng"].toStringAsFixed(2);
-      var url = Uri.parse('$endpoint?latitude=${lat}&longitude=${lng}&start_date=2020-01-01&end_date=2023-06-13&hourly=snowfall&min=2020-01-01&max=2023-06-13');
-      print(url);
+      var url = Uri.parse('$endpoint?latitude=${lat}&longitude=${lng}&start_date=2020-01-01&end_date=2023-06-13&hourly=snowfall');
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final json = jsonDecode(response.body);
+        List<String> timestamps = List<String>.from(json['hourly']['time']);
+        List<double?> snowfallList = List<double?>.from(json['hourly']['snowfall']);
+
+        double totalSnowfall = 0.0;
+        for (var snowfall in snowfallList) {
+          if (snowfall != null) {
+            totalSnowfall += snowfall;
+          }
+        }
+        print(cityName);
+        print(totalSnowfall);
+        snowFalls[cityName] = totalSnowfall;
+      }
     }
-    return "Hej";
+
+    String keyWithMinValue = snowFalls.keys.first;
+    String keyWithMaxValue = snowFalls.keys.first;
+    double minValue = snowFalls[keyWithMinValue]!;
+    double maxValue = snowFalls[keyWithMinValue]!;
+
+    snowFalls.forEach((key, value) {
+      if (value < minValue) {
+        minValue = value;
+        keyWithMinValue = key;
+      }
+      if (value > maxValue) {
+        maxValue = value;
+        keyWithMaxValue = key;
+      }
+    });
+
+    String diff = (maxValue / minValue).toStringAsFixed(2);
+
+    setState(() {
+      buttonText = "${keyWithMinValue} has ${diff}x less snow than ${keyWithMaxValue}.";
+    });
   }
 
   void onCitySelected(String city, Map<String, dynamic> coordinates) {
@@ -38,6 +76,8 @@ class _MyAppState extends State<MyApp> {
       cityCoordinates[city] = coordinates;
     });
   }
+
+  String buttonText = 'See where it snows the most';
 
   @override
   Widget build(BuildContext context) {
@@ -59,18 +99,13 @@ class _MyAppState extends State<MyApp> {
             CityInputField(label: 'City 2', controller: city2Controller, onCitySelected: onCitySelected),
             SizedBox(height: 24),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
+                FocusManager.instance.primaryFocus?.unfocus();
                 final city1 = city1Controller.text;
                 final city2 = city2Controller.text;
-                cityWinnerCalculator();
-                Fluttertoast.showToast(
-                  msg: 'Coordinates for ${city1}: ${cityCoordinates[city1]?.toString()}\n'
-                       'Coordinates for ${city2}: ${cityCoordinates[city2]?.toString()}',
-                  toastLength: Toast.LENGTH_LONG,
-                  gravity: ToastGravity.BOTTOM,
-                );
+                await cityWinnerCalculator(); // Wait for the calculation to finish
               },
-              child: Text('See where it snows the most'),
+              child: Text(buttonText),
             ),
           ],
         ),
@@ -78,6 +113,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
 
 class CityInputField extends StatefulWidget {
   final String label;
