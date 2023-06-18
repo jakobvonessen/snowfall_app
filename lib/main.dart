@@ -22,10 +22,10 @@ class _MyAppState extends State<MyApp> {
   // Map to store coordinates for both cities
   Map<String, Map<String, dynamic>> cityCoordinates = {};
 
-  Future<void> cityWinnerCalculator() async {
+  Future<void> cityWinnerCalculator(String city1, String city2) async {
     final String endpoint = 'https://archive-api.open-meteo.com/v1/archive';
     Map<String, double> snowFalls = {};
-    for (var cityName in cityCoordinates.keys) {
+    for (var cityName in [city1, city2]) {
       var cityData = cityCoordinates[cityName];
       var lat = cityData?["lat"].toStringAsFixed(2);
       var lng = cityData?["lng"].toStringAsFixed(2);
@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
                 FocusManager.instance.primaryFocus?.unfocus();
                 final city1 = city1Controller.text;
                 final city2 = city2Controller.text;
-                await cityWinnerCalculator(); // Wait for the calculation to finish
+                await cityWinnerCalculator(city1, city2);
               },
               child: Text(buttonText),
             ),
@@ -131,7 +131,7 @@ class _CityInputFieldState extends State<CityInputField> {
   
   List<String> suggestions = [];
   List<String> placeIds = [];
-  Map<String, dynamic> coordinates = {}; // Map to store city coordinates
+  Map<String, dynamic> coordinates = {};
 
   void _fetchSuggestions(String input) async {
     final endpoint = 'https://maps.googleapis.com/maps/api/place/autocomplete/json';
@@ -170,7 +170,7 @@ class _CityInputFieldState extends State<CityInputField> {
           final city = widget.controller.text;
           setState(() {
             coordinates[city] = {'lat': lat, 'lng': lng};
-            widget.onCitySelected(city, {'lat': lat, 'lng': lng}); // Call the callback
+            widget.onCitySelected(city, {'lat': lat, 'lng': lng});
           });
         }
       }
@@ -194,10 +194,7 @@ class _CityInputFieldState extends State<CityInputField> {
             ),
             onChanged: (value) {
               _fetchSuggestions(value);
-            },
-            onSubmitted: (value) {
-              // Do something with the selected city and its coordinates
-            },
+            }
           ),
         ),
         Container(
