@@ -21,6 +21,18 @@ class _MyAppState extends State<MyApp> {
   // Map to store coordinates for both cities
   Map<String, Map<String, dynamic>> cityCoordinates = {};
 
+  String cityWinnerCalculator() {
+    final String endpoint = 'https://archive-api.open-meteo.com/v1/archive';
+    for (var cityName in cityCoordinates.keys) {
+      var cityData = cityCoordinates[cityName];
+      var lat = cityData?["lat"].toStringAsFixed(2);
+      var lng = cityData?["lng"].toStringAsFixed(2);
+      var url = Uri.parse('$endpoint?latitude=${lat}&longitude=${lng}&start_date=2020-01-01&end_date=2023-06-13&hourly=snowfall&min=2020-01-01&max=2023-06-13');
+      print(url);
+    }
+    return "Hej";
+  }
+
   void onCitySelected(String city, Map<String, dynamic> coordinates) {
     setState(() {
       cityCoordinates[city] = coordinates;
@@ -50,6 +62,7 @@ class _MyAppState extends State<MyApp> {
               onPressed: () {
                 final city1 = city1Controller.text;
                 final city2 = city2Controller.text;
+                cityWinnerCalculator();
                 Fluttertoast.showToast(
                   msg: 'Coordinates for ${city1}: ${cityCoordinates[city1]?.toString()}\n'
                        'Coordinates for ${city2}: ${cityCoordinates[city2]?.toString()}',
