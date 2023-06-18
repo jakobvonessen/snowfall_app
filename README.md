@@ -1,6 +1,3 @@
-Certainly! Here's a basic Markdown template for a `README.md` file for your app:
-
-```
 # Snowfall Comparison App
 
 The Snowfall Comparison App is a mobile application that allows users to compare the total amount of snowfall between two cities. It helps users determine which place has the most livable snowfall based on data from the first of January 2020 to the 18th of June 2023.
