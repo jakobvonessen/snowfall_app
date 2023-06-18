@@ -42,8 +42,6 @@ class _MyAppState extends State<MyApp> {
             totalSnowfall += snowfall;
           }
         }
-        print(cityName);
-        print(totalSnowfall);
         snowFalls[cityName] = totalSnowfall;
       }
     }
