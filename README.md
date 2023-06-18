@@ -25,7 +25,16 @@ To install and run the Snowfall Comparison App:
    flutter pub get
    ```
 
-3. Run the app:
+3. Create a default app:
+   '``shell
+   flutter create snowfall_app
+   ```
+
+4. Copy over the files to the app.
+
+5. Create a `lib/secrets.dart` file, containing `final String apiKey = "your_api_key"` (get a Places API key [here](https://developers.google.com/maps/documentation/places/web-service/overview)).
+
+6. Run the app:
 
    ```shell
    flutter run
