@@ -72,13 +72,18 @@ class _MyAppState extends State<MyApp> {
   void onCitySelected(String city, Map<String, dynamic> coordinates) {
     setState(() {
       cityCoordinates[city] = coordinates;
+      buttonText = defaultButtonText;
     });
   }
 
-  String buttonText = 'See where it snows the most';
+  String defaultButtonText = 'See where it snows the most';
+  String buttonText = "";
 
   @override
   Widget build(BuildContext context) {
+    setState() {
+      buttonText = defaultButtonText;
+    }
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -192,7 +197,8 @@ class _CityInputFieldState extends State<CityInputField> {
             ),
             onChanged: (value) {
               _fetchSuggestions(value);
-            }
+            },
+            onTap: () => widget.controller.selection = TextSelection(baseOffset: 0, extentOffset: widget.controller.value.text.length),
           ),
         ),
         Container(
