@@ -33,6 +33,7 @@ class _MyAppState extends State<MyApp> {
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final json = jsonDecode(response.body);
+
         List<String> timestamps = List<String>.from(json['hourly']['time']);
         List<double?> snowfallList = List<double?>.from(json['hourly']['snowfall']);
 
