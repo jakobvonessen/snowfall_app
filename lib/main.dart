@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'secrets.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -78,6 +79,7 @@ class _MyAppState extends State<MyApp> {
 
   String defaultButtonText = 'See where it snows the most';
   String buttonText = "";
+  List<String> _selectedOptions = [];
 
   @override
   Widget build(BuildContext context) {
@@ -93,6 +95,16 @@ class _MyAppState extends State<MyApp> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
+              'What type of weather do you prefer?',
+              style: TextStyle(fontSize: 24),
+            ),
+            MultiOptionSelector(
+              onSelectionChanged: (selectedOptions) {
+                _selectedOptions = selectedOptions;
+              }
+            ),
+            SizedBox(height: 16),
+            Text(
               'Choose two cities',
               style: TextStyle(fontSize: 24),
             ),
@@ -101,6 +113,11 @@ class _MyAppState extends State<MyApp> {
             SizedBox(height: 16),
             CityInputField(label: 'City 2', controller: city2Controller, onCitySelected: onCitySelected),
             SizedBox(height: 24),
+            Text(
+              'Since',
+              style: TextStyle(fontSize: 24),
+            ),
+            
             ElevatedButton(
               onPressed: () async {
                 FocusManager.instance.primaryFocus?.unfocus();
@@ -116,6 +133,52 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
+
+class MultiOptionSelector extends StatefulWidget {
+  final Function(List<String>) onSelectionChanged;
+
+  MultiOptionSelector({required this.onSelectionChanged});
+
+  @override
+  _MultiOptionSelectorState createState() => _MultiOptionSelectorState();
+}
+
+class _MultiOptionSelectorState extends State<MultiOptionSelector> {
+  Set<int> _selectedIndices = {};
+  List<String> _options = ['Snow', 'Rain', 'Sunshine', 'Warmth'];
+
+  @override
+  Widget build(BuildContext context) {
+    return ToggleButtons(
+      isSelected: _options.asMap().entries.map((entry) => _selectedIndices.contains(entry.key)).toList(),
+      onPressed: (int index) {
+        setState(() {
+          if (_selectedIndices.contains(index)) {
+            _selectedIndices.remove(index);
+          } else {
+            _selectedIndices.add(index);
+          }
+        });
+        widget.onSelectionChanged(getSelectedOptions());
+      },
+      children: _options.map((String option) {
+        return Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(option),
+        );
+      }).toList(),
+      selectedColor: Colors.white,
+      fillColor: Colors.blue,
+      borderRadius: BorderRadius.circular(10),
+    );
+  }
+
+  List<String> getSelectedOptions() {
+    return _selectedIndices.map((index) => _options[index]).toList();
+  }
+}
+
 
 
 class CityInputField extends StatefulWidget {
