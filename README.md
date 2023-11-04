@@ -26,7 +26,7 @@ To install and run the Snowfall Comparison App:
    ```
 
 3. Create a default app:
-   '``shell
+   ```shell
    flutter create snowfall_app
    ```
 
